@@ -15,34 +15,35 @@ def main(model_name, model_type):
     np.random.seed(0)
     assert keras.backend.backend() == "tensorflow"
     set_mnist_flags()
-    
-    flags.DEFINE_bool('NUM_EPOCHS', args.epochs, 'Number of epochs')
 
-    # Get MNIST test data
-    X_train, Y_train, X_test, Y_test = data_mnist()
+    with K.device('/gpu:5'):
+        flags.DEFINE_bool('NUM_EPOCHS', args.epochs, 'Number of epochs')
 
-    data_gen = data_gen_mnist(X_train)
+        # Get MNIST test data
+        X_train, Y_train, X_test, Y_test = data_mnist()
 
-    x = K.placeholder((None,
-                       FLAGS.IMAGE_ROWS,
-                       FLAGS.IMAGE_COLS,
-                       FLAGS.NUM_CHANNELS
-                       ))
+        data_gen = data_gen_mnist(X_train)
 
-    y = K.placeholder(shape=(None, FLAGS.NUM_CLASSES))
+        x = K.placeholder((None,
+                           FLAGS.IMAGE_ROWS,
+                           FLAGS.IMAGE_COLS,
+                           FLAGS.NUM_CHANNELS
+                           ))
 
-    model = model_mnist(type=model_type)
+        y = K.placeholder(shape=(None, FLAGS.NUM_CLASSES))
 
-    # Train an MNIST model
-    tf_train(x, y, model, X_train, Y_train, data_gen)
+        model = model_mnist(type=model_type)
 
-    # Finally print the result!
-    test_error = tf_test_error_rate(model, x, X_test, Y_test)
-    print('Test error: %.1f%%' % test_error)
-    save_model(model, model_name)
-    json_string = model.to_json()
-    with open(model_name+'.json', 'wr') as f:
-        f.write(json_string)
+        # Train an MNIST model
+        tf_train(x, y, model, X_train, Y_train, data_gen)
+
+        # Finally print the result!
+        test_error = tf_test_error_rate(model, x, X_test, Y_test)
+        print('Test error: %.1f%%' % test_error)
+        save_model(model, model_name)
+        json_string = model.to_json()
+        with open(model_name+'.json', 'wr') as f:
+            f.write(json_string)
 
 
 if __name__ == '__main__':
