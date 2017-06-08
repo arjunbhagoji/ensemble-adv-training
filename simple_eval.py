@@ -79,13 +79,17 @@ def main(attack, src_model_name, target_model_names):
         r = np.clip(X_adv - X_test, -args.eps, args.eps)
         X_adv = X_test + r
 
+	ofile = open('CW_attack_success.txt','a')
+
         err = tf_test_error_rate(src_model, x, X_adv, Y_test)
         print '{}->{}: {:.1f}'.format(basename(src_model_name), basename(src_model_name), err)
-
+	ofile.write('{}->{}: {:.1f} \n'.format(basename(src_model_name), basename(src_model_name), err))
         for (name, target_model) in zip(target_model_names, target_models):
             err = tf_test_error_rate(target_model, x, X_adv, Y_test)
             print '{}->{}: {:.1f}'.format(basename(src_model_name), basename(name), err)
-
+	    ofile.write('{}->{}: {:.1f} \n'.format(basename(src_model_name), basename(name), err))
+	
+	ofile.close()
         return
 
     # compute the adversarial examples and evaluate

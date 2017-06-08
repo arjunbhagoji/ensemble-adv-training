@@ -3,6 +3,7 @@ import keras
 from keras import backend as K
 from tensorflow.python.platform import flags
 from keras.models import save_model
+import tensorflow as tf
 
 from tf_utils import tf_train, tf_test_error_rate
 from mnist import *
@@ -16,7 +17,7 @@ def main(model_name, model_type):
     assert keras.backend.backend() == "tensorflow"
     set_mnist_flags()
 
-    with K.device('/gpu:5'):
+    with tf.device('/gpu:5'):
         flags.DEFINE_bool('NUM_EPOCHS', args.epochs, 'Number of epochs')
 
         # Get MNIST test data
