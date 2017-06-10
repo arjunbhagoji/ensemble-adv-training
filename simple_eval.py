@@ -1,6 +1,7 @@
 import numpy as np
 import tensorflow as tf
 import keras.backend as K
+import cPickle as pickle
 from mnist import data_mnist, set_mnist_flags, load_model
 from fgs import symbolic_fgs, iter_fgs
 from carlini import CarliniLi
@@ -68,8 +69,8 @@ def main(attack, src_model_name, target_model_names):
 
     # Carlini & Wagner attack
     if attack == "CW":
-        X_test = X_test[0:1000]
-        Y_test = Y_test[0:1000]
+        X_test = X_test[0:1]
+        Y_test = Y_test[0:1]
 
         cli = CarliniLi(K.get_session(), src_model,
                         targeted=False, confidence=args.kappa, eps=args.eps)
@@ -79,17 +80,19 @@ def main(attack, src_model_name, target_model_names):
         r = np.clip(X_adv - X_test, -args.eps, args.eps)
         X_adv = X_test + r
 
-	ofile = open('CW_attack_success.txt','a')
+        pickle.dump(X_adv, open(src_model_name+'_adv_set.pkl','wb'))
+
+	    ofile = open('CW_attack_success.txt','a')
 
         err = tf_test_error_rate(src_model, x, X_adv, Y_test)
         print '{}->{}: {:.1f}'.format(basename(src_model_name), basename(src_model_name), err)
-	ofile.write('{}->{}: {:.1f} \n'.format(basename(src_model_name), basename(src_model_name), err))
+	    ofile.write('{}->{}: {:.1f} \n'.format(basename(src_model_name), basename(src_model_name), err))
         for (name, target_model) in zip(target_model_names, target_models):
             err = tf_test_error_rate(target_model, x, X_adv, Y_test)
             print '{}->{}: {:.1f}'.format(basename(src_model_name), basename(name), err)
 	    ofile.write('{}->{}: {:.1f} \n'.format(basename(src_model_name), basename(name), err))
-	
-	ofile.close()
+
+	    ofile.close()
         return
 
     # compute the adversarial examples and evaluate
